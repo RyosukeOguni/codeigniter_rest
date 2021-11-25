@@ -121,7 +121,7 @@ class News extends ResourceController
       ),
       'body' => $input['body']
     ];
-    $this->model->update($id,$data);
+    $this->model->update($id, $data);
 
     $response = [
       'status' => $this->codes['updated'],
@@ -141,6 +141,18 @@ class News extends ResourceController
    */
   public function delete($id = null)
   {
-    //
+    $news = $this->model->find($id);
+    if ($news === null) {
+      return $this->failNotFound('No news found');
+    }
+    $this->model->where('id', $id)->delete();
+    $response = [
+      'status' => $this->codes['deleted'],
+      'error' => null,
+      'messages' => [
+        'success' => 'News successfully deleted',
+      ]
+    ];
+    return $this->respondDeleted($response);
   }
 }
