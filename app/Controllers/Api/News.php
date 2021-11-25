@@ -32,7 +32,18 @@ class News extends ResourceController
    */
   public function show($id = null)
   {
-    //
+    $news = $this->model->find($id);
+    if ($news === null) {
+      return $this->failNotFound('No news found');
+    }
+
+    $response = [
+      'status' => 200,
+      'error' => null,
+      'news' => $news,
+    ];
+
+    return $this->respond($response);
   }
 
   /**
