@@ -53,7 +53,35 @@ class News extends ResourceController
    */
   public function create()
   {
-    //
+    if (!$this->validate(
+      [
+        'title' => 'required|min_length[3]|max_length[255]',
+        'body' => 'required',
+      ]
+    )) {
+      $errors = implode(' ', $this->validator->getErrors());
+      return $this->failValidationErrors($errors);
+    }
+    $this->model->insert(
+      [
+        'title' => $this->request->getPost('title'),
+        'slug' => url_title(
+          $this->request->getPost('title'),
+          '-',
+          true
+        ),
+        'body' => $this->request->getPost('body'),
+      ]
+    );
+
+    $response = [
+      'status' => $this->codes['created'],
+      'error' => null,
+      'messages' => [
+        'succcess' => 'News successfully created',
+      ]
+    ];
+    return $this->respondCreated($response);
   }
 
   /**
@@ -63,7 +91,47 @@ class News extends ResourceController
    */
   public function update($id = null)
   {
-    //
+    if ($this->request->getMethod() === 'patch') {
+      return $this->fail('PATCH is not implemented');
+    }
+
+    if (!$this->validate(
+      [
+        'title' => 'required|min_length[3]|max_length[255]',
+        'body' => 'required',
+      ]
+    )) {
+      $errors = implode(' ', $this->validator->getErrors());
+
+      return $this->failValidationError($errors);
+    }
+
+    $news = $this->model->find($id);
+    if ($news === null) {
+      return $this->failNotFound('No news found');
+    }
+
+    $input = $this->request->getRawInput();
+    $data = [
+      'title' => $input['title'],
+      'slug' => url_title(
+        $input['title'],
+        '-',
+        true
+      ),
+      'body' => $input['body']
+    ];
+    $this->model->update($id,$data);
+
+    $response = [
+      'status' => $this->codes['updated'],
+      'error' => null,
+      'messages' => [
+        'success' => 'News successfully updated',
+      ]
+    ];
+
+    return $this->respond($response);
   }
 
   /**
